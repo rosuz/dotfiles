@@ -1,0 +1,26 @@
+#!/bin/bash
+
+WALLPAPER_DIR="$HOME/.config/themes/current/backgrounds"
+CONFIG="$HOME/.config/hypr/hyprpaper.conf"
+
+current=$(grep "path = " "$CONFIG" | sed 's|path = ||')
+
+shopt -s nullglob
+wallpapers=("$WALLPAPER_DIR"/*.png "$WALLPAPER_DIR"/*.jpg)
+shopt -u nullglob
+
+wallpapers=("${wallpapers[@]##*/}")
+
+current_name=$(basename "$current")
+for i in "${!wallpapers[@]}"; do
+  if [[ "${wallpapers[$i]}" == "$current_name" ]]; then
+    next_idx=$(( (i + 1) % ${#wallpapers[@]} ))
+    break
+  fi
+done
+
+new_wallpaper="$WALLPAPER_DIR/${wallpapers[$next_idx]}"
+
+sed -i "s|path = .*|path = $new_wallpaper|" "$CONFIG"
+
+hyprpaper &

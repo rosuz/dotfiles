@@ -1,0 +1,33 @@
+#!/bin/bash
+# Clipboard manager - command-based, no rofi
+# Usage: clipboard <command> [args]
+# Commands:
+#   list        - Output items (id + preview)
+#   select <id> - Copy item to clipboard
+#   reset       - Clear clipboard history
+
+COMMAND="${1:-}"
+
+case "$COMMAND" in
+  list)
+    cliphist list 2>/dev/null
+    ;;
+  select)
+    ID="$2"
+    [[ -z "$ID" ]] && exit 1
+    cliphist decode "$ID" | wl-copy
+    ;;
+  reset)
+    pkill wl-paste 2>/dev/null
+    pkill cliphist 2>/dev/null
+    printf "" | wl-copy
+    rm -rf ~/.cache/cliphist/db
+    sleep 0.2
+    wl-paste --watch cliphist store >/dev/null 2>&1 & disown
+    notify-send "Clipboard history reset"
+    ;;
+  *)
+    echo "Usage: clipboard <list|select <id>|reset>"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Launch or focus on a given command identified by the passed in window-pattern.
+# Use by some default bindings, like the one for Spotify, to ensure there is only one instance of the application open.
+
+if (($# == 0)); then
+  echo "Usage: launch-or-focus [window-pattern] [launch-command]"
+  exit 1
+fi
+
+WINDOW_PATTERN="$1"
+LAUNCH_COMMAND="${2:-"uwsm-app -- $WINDOW_PATTERN"}"
+
+# First try window class/title (for regular apps)
+WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$WINDOW_PATTERN" '.[]|select((.class|test("\\b" + $p + "\\b";"i")) or (.title|test("\\b" + $p + "\\b";"i")))|.address' | head -n1)
+
+# If not found, try PID-based search (for TUIs running in terminals)
+if [[ -z "$WINDOW_ADDRESS" ]]; then
+  # Find the process by name
+  PID=$(pgrep -f "$WINDOW_PATTERN" | head -1)
+  if [[ -n "$PID" ]]; then
+    # Find the window that has this PID or is a child of this PID
+    WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg pid "$PID" '.[] | select(.pid == ( $pid | tonumber )) | .address' | head -n1)
+    
+    # If still not found, try finding by checking child processes
+    if [[ -z "$WINDOW_ADDRESS" ]]; then
+      CHILD_PID=$(pgrep -P "$PID" | head -1)
+      if [[ -n "$CHILD_PID" ]]; then
+        WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg pid "$CHILD_PID" '.[] | select(.pid == ( $pid | tonumber )) | .address' | head -n1)
+      fi
+    fi
+  fi
+fi
+
+if [[ -n "$WINDOW_ADDRESS" ]]; then
+  hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS"
+else
+  eval "$LAUNCH_COMMAND"
+fi

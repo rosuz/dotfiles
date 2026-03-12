@@ -1,0 +1,65 @@
+#!/bin/bash
+set -euo pipefail
+
+ACTION="${1:-}"
+OUTPUT="${2:-clipboard}"
+
+SAVE_DIR="$HOME/Pictures/Screenshots"
+
+capture() {
+  mkdir -p "$SAVE_DIR"
+  tmp=$(mktemp /tmp/screenshot_XXXXXX.png)
+  grim -g "$GEOMETRY" "$tmp"
+  echo "$tmp"
+}
+
+case "$ACTION" in
+  full)
+    mkdir -p "$SAVE_DIR"
+    tmp=$(mktemp /tmp/screenshot_XXXXXX.png)
+    grim -g "" "$tmp"
+    echo "$tmp"
+    ;;
+  selection)
+    GEOMETRY=$(slurp) || exit 0
+    [[ -z "$GEOMETRY" ]] && exit 0
+    tmp=$(capture)
+    ;;
+  window)
+    ws=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .activeWorkspace.id')
+    rects=$(
+      hyprctl monitors -j | jq -r --arg ws "$ws" \
+        '.[] | select(.activeWorkspace.id == ($ws | tonumber)) | "\(.x),\(.y) \((.width / .scale) | floor)x\((.height / .scale) | floor)"'
+      hyprctl clients -j | jq -r --arg ws "$ws" \
+        '.[] | select(.workspace.id == ($ws | tonumber)) | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+    )
+    wayfreeze & PID=$!
+    sleep 0.1
+    GEOMETRY=$(echo "$rects" | slurp) || { kill $PID 2>/dev/null; exit 0; }
+    kill $PID 2>/dev/null
+    [[ -z "$GEOMETRY" ]] && exit 0
+    tmp=$(capture)
+    ;;
+  *)
+    echo "Usage: cmd-screenshot <full|selection|window> [clipboard|save|both]"
+    exit 1
+    ;;
+esac
+
+case "$OUTPUT" in
+  clipboard)
+    wl-copy < "$tmp"; rm -f "$tmp"
+    notify-send "Screenshot copied to clipboard"
+    ;;
+  save)
+    file="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
+    mv -f "$tmp" "$file"
+    notify-send "Screenshot saved" "$file"
+    ;;
+  both)
+    wl-copy < "$tmp"
+    file="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
+    mv -f "$tmp" "$file"
+    notify-send "Screenshot saved and copied" "$file"
+    ;;
+esac

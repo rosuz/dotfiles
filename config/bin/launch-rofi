@@ -1,0 +1,295 @@
+#!/usr/bin/env bash
+
+# ============================================================
+# launch-rofi - Omarchy-style menu using rofi
+# ============================================================
+
+# -----------------------------
+# HELPER FUNCTIONS
+# -----------------------------
+
+not_impl() {
+    notify-send "$1" "need implementation" -u low
+}
+
+menu() {
+    local prompt="$1"
+    local options="$2"
+    
+    choice=$(echo -e "$options" | rofi -dmenu -p "$prompt" -theme minimal)
+    
+    if [[ -z "$choice" ]]; then
+        return 1
+    fi
+    echo "$choice"
+}
+
+# -----------------------------
+# MENU STACK
+# -----------------------------
+
+declare -a MENU_STACK=()
+
+push_menu() {
+    if [[ ${#MENU_STACK[@]} -eq 0 ]]; then
+        MENU_STACK+=("$1")
+    elif [[ "${MENU_STACK[-1]}" != "$1" ]]; then
+        MENU_STACK+=("$1")
+    fi
+}
+
+pop_menu() {
+    if [[ ${#MENU_STACK[@]} -gt 1 ]]; then
+        unset 'MENU_STACK[-1]'
+    fi
+}
+
+back_menu() {
+    pop_menu
+    local prev="${MENU_STACK[-1]}"
+    $prev
+}
+
+# -----------------------------
+# MAIN MENU
+# -----------------------------
+
+show_main_menu() {
+    push_menu "show_main_menu"
+    choice=$(menu "Go" "󰀻  Apps\n󰧑  Learn\n󰔎  Trigger\n󰐕  Style\n󰘗  Setup\n󰉉  Install\n󰭌  Remove\n  Update\n󰋙  About\n󰐥  System")
+    case "$choice" in
+    *Apps*)        rofi -show drun -theme minimal ;;
+    *Learn*)       show_learn_menu ;;
+    *Trigger*)     show_trigger_menu ;;
+    *Style*)       show_style_menu ;;
+    *Setup*)       show_setup_menu ;;
+    *Install*)     show_install_menu ;;
+    *Remove*)      show_remove_menu ;;
+    *Update*)      show_update_menu ;;
+    *About*)       show_about ;;
+    *System*)      show_system_menu ;;
+    *)             exit 0 ;;
+    esac
+}
+
+# -----------------------------
+# LEARN MENU
+# -----------------------------
+
+show_learn_menu() {
+    push_menu "show_learn_menu"
+    case $(menu "Learn" "  Keybindings\n󰧑  Omarchy\n󰍙  Hyprland\n󰣇  Arch\n󱆃  Neovim\n󰑲  Bash") in
+    *Keybindings*)  menu-keybindings | rofi -dmenu -theme minimal -p "Keybindings" -i && exit 0 ;;
+    *Omarchy*)      xdg-open https://learn.omacom.io/2/the-omarchy-manual && exit 0 ;;
+    *Hyprland*)     xdg-open https://wiki.hyprland.org/ && exit 0 ;;
+    *Arch*)         xdg-open https://wiki.archlinux.org/ && exit 0 ;;
+    *Neovim*)       xdg-open https://www.lazyvim.org/keymaps && exit 0 ;;
+    *Bash*)         xdg-open https://devhints.io/bash && exit 0 ;;
+    *)              back_menu ;;
+    esac
+}
+
+# -----------------------------
+# TRIGGER MENU
+# -----------------------------
+
+show_trigger_menu() {
+    push_menu "show_trigger_menu"
+    case $(menu "Trigger" "  Capture\n󰔎  Share\n󰐕  Toggle\n󰒇  Hardware") in
+    *Capture*)     show_capture_menu ;;
+    *Share*)       show_share_menu ;;
+    *Toggle*)      show_toggle_menu ;;
+    *Hardware*)    not_impl "Hardware menu" ;;
+    *)             back_menu ;;
+    esac
+}
+
+# -----------------------------
+# CAPTURE MENU
+# -----------------------------
+
+show_capture_menu() {
+    push_menu "show_capture_menu"
+    case $(menu "Capture" "  Screenshot\n󰕰  Screenrecord\n󰑽  Color") in
+    *Screenshot*)      cmd-screenshot selection clipboard && exit 0 ;;
+    *Screenrecord*)    show_screenrecord_menu ;;
+    *Color*)           hyprpicker-launch && exit 0 ;;
+    *)                 back_menu ;;
+    esac
+}
+
+# -----------------------------
+# SCREENRECORD MENU
+# -----------------------------
+
+show_screenrecord_menu() {
+    push_menu "show_screenrecord_menu"
+    case $(menu "Screenrecord" "󰕰  Full screen\n󰊄  Selection\n󰈞  Window") in
+    *Full\ screen*)    cmd-screenrecord full && exit 0 ;;
+    *Selection*)       cmd-screenrecord selection && exit 0 ;;
+    *Window*)          cmd-screenrecord window && exit 0 ;;
+    *)                 back_menu; return ;;
+    esac
+}
+
+# -----------------------------
+# SHARE MENU
+# -----------------------------
+
+show_share_menu() {
+    push_menu "show_share_menu"
+    case $(menu "Share" "󰏬  Clipboard\n󰈔  File\n󰉋  Folder") in
+    *Clipboard*)    show_clipboard_menu ;;
+    *File*)         not_impl "Share file" ;;
+    *Folder*)       not_impl "Share folder" ;;
+    *)              back_menu ;;
+    esac
+}
+
+# -----------------------------
+# TOGGLE MENU
+# -----------------------------
+
+show_toggle_menu() {
+    push_menu "show_toggle_menu"
+    case $(menu "Toggle" "󰃆  Screensaver\n󰟬  Nightlight\n󱫖  Idle Lock\n󰍜  Waybar\n󱂬  Workspace Layout\n󰐭  Window Gaps") in
+    *Screensaver*)    toggle-screensaver ;;
+    *Nightlight*)     toggle-nightlight ;;
+    *Idle*)           toggle-idle ;;
+    *Waybar*)         toggle-waybar ;;
+    *Layout*)         not_impl "Toggle workspace layout" ;;
+    *Gaps*)           hyprland-workspace-toggle-gaps ;;
+    *)                back_menu ;;
+    esac
+}
+
+# -----------------------------
+# STYLE MENU
+# -----------------------------
+
+show_style_menu() {
+    push_menu "show_style_menu"
+    case $(menu "Style" "󰸌  Theme\n󰑹  Font\n󰀻  Background\n󰍙  Hyprland\n󰃆  Screensaver\n󰋙  About") in
+    *Theme*)       not_impl "Theme switching" ;;
+    *Font*)        not_impl "Font switching" ;;
+    *Background*)  theme-bg-next && exit 0 ;;
+    *Hyprland*)    ${EDITOR:-nvim} ~/.config/hypr/looknfeel.conf && exit 0 ;;
+    *Screensaver*) ${EDITOR:-nvim} ~/.config/hypr/screensaver.conf && exit 0 ;;
+    *About*)       ${EDITOR:-nvim} ~/.config/hypr/about.conf && exit 0 ;;
+    *)             back_menu ;;
+    esac
+}
+
+# -----------------------------
+# SETUP MENU
+# -----------------------------
+
+show_setup_menu() {
+    push_menu "show_setup_menu"
+    case $(menu "Setup" "󰜌  Audio\n󰤨  Wifi\n󰂯  Bluetooth\n󱐋  Power Profile\n󰍹  Monitors\n  Keybindings\n󰍾  Input") in
+    *Audio*)       launch-audio && exit 0 ;;
+    *Wifi*)        launch-wifi && exit 0 ;;
+    *Bluetooth*)   launch-bluetooth && exit 0 ;;
+    *Power*)       not_impl "Power profile" ;;
+    *Monitors*)    not_impl "Edit monitors.conf" ;;
+    *Keybindings*) not_impl "Edit bindings.conf" ;;
+    *Input*)       not_impl "Edit input.conf" ;;
+    *)             back_menu ;;
+    esac
+}
+
+# -----------------------------
+# INSTALL MENU
+# -----------------------------
+
+show_install_menu() {
+    push_menu "show_install_menu"
+    case $(menu "Install" "󰣇  Package\n󰣇  AUR\n  Web App\n󰸌  Theme\n󰀻  Background\n󰑹  Font") in
+    *Package*)    not_impl "Install package" ;;
+    *AUR*)        not_impl "Install AUR package" ;;
+    *Web*)        not_impl "Install web app" ;;
+    *Theme*)      not_impl "Install theme" ;;
+    *Background*) not_impl "Install background" ;;
+    *Font*)       not_impl "Install font" ;;
+    *)            back_menu ;;
+    esac
+}
+
+# -----------------------------
+# REMOVE MENU
+# -----------------------------
+
+show_remove_menu() {
+    push_menu "show_remove_menu"
+    case $(menu "Remove" "󰣇  Package\n󰸌  Theme") in
+    *Package*)    not_impl "Remove package" ;;
+    *Theme*)      not_impl "Remove theme" ;;
+    *)            back_menu ;;
+    esac
+}
+
+# -----------------------------
+# UPDATE MENU
+# -----------------------------
+
+show_update_menu() {
+    push_menu "show_update_menu"
+    case $(menu "Update" "󰐕  Config\n󰤎  Process\n󰀡  All") in
+    *Config*)     not_impl "Refresh config" ;;
+    *Process*)    not_impl "Restart process" ;;
+    *All*)        not_impl "Update all" ;;
+    *)            back_menu ;;
+    esac
+}
+
+# -----------------------------
+# ABOUT
+# -----------------------------
+
+show_about() {
+    push_menu "show_about"
+    not_impl "About"
+    back_menu
+}
+
+# -----------------------------
+# SYSTEM MENU
+# -----------------------------
+
+show_system_menu() {
+    push_menu "show_system_menu"
+    case $(menu "System" "󰃆  Screensaver\n󰌾  Lock\n󰒲  Suspend\n󰍃  Logout\n󰜉  Restart\n󰐥  Shutdown") in
+    *Screensaver*) toggle-screensaver ;;
+    *Lock*)        lock-screen && exit 0 ;;
+    *Suspend*)     systemctl suspend && exit 0 ;;
+    *Logout*)      hyprctl dispatch exit && exit 0 ;;
+    *Restart*)     systemctl reboot && exit 0 ;;
+    *Shutdown*)    systemctl poweroff && exit 0 ;;
+    *)             back_menu ;;
+    esac
+}
+
+# -----------------------------
+# CLIPBOARD MENU (called from Share)
+# -----------------------------
+
+show_clipboard_menu() {
+    push_menu "show_clipboard_menu"
+    choice=$(menu "Clipboard" "󰇹  Reset clipboard\n$(cmd-clipboard list 2>/dev/null)")
+    
+    if [[ "$choice" == "󰇹  Reset"* ]]; then
+        cmd-clipboard reset
+        show_clipboard_menu
+    elif [[ -n "$choice" ]]; then
+        id=$(echo "$choice" | awk '{print $1}')
+        cmd-clipboard select "$id" && exit 0
+    else
+        back_menu
+    fi
+}
+
+# -----------------------------
+# START
+# -----------------------------
+
+show_main_menu

@@ -1,0 +1,203 @@
+#!/bin/bash
+# Display Hyprland keybindings - outputs list only, no rofi
+
+KEYCODE_SYM_MAP=()
+
+build_keymap_cache() {
+  local keymap
+  keymap="$(xkbcli compile-keymap)" || {
+    echo "Failed to compile keymap" >&2
+    return 1
+  }
+
+  while IFS=, read -r code sym; do
+    [[ -z "$code" || -z "$sym" ]] && continue
+    KEYCODE_SYM_MAP["$code"]="$sym"
+  done < <(
+    awk '
+      BEGIN { sec = "" }
+      /xkb_keycodes/ { sec = "codes"; next }
+      /xkb_symbols/  { sec = "syms";  next }
+      sec == "codes" {
+        if (match($0, /<([A-Za-z0-9_]+)>\s*=\s*([0-9]+)\s*;/, m)) code_by_name[m[1]] = m[2]
+      }
+      sec == "syms" {
+        if (match($0, /key\s*<([A-Za-z0-9_]+)>\s*\{\s*\[\s*([^, \]]+)/, m)) sym_by_name[m[1]] = m[2]
+      }
+      END {
+        for (k in code_by_name) {
+          c = code_by_name[k]
+          s = sym_by_name[k]
+          if (c != "" && s != "" && s != "NoSymbol") print c "," s
+        }
+      }
+    ' <<<"$keymap"
+  )
+}
+
+lookup_keycode() {
+  printf '%s\n' "${KEYCODE_SYM_MAP[$1]}"
+}
+
+parse_keycodes() {
+  while IFS= read -r line; do
+    if [[ "$line" =~ code:([0-9]+) ]]; then
+      code="${BASH_REMATCH[1]}"
+      symbol=$(lookup_keycode "$code")
+      echo "${line/code:${code}/$symbol}"
+    elif [[ "$line" =~ mouse:([0-9]+) ]]; then
+      code="${BASH_REMATCH[1]}"
+      case "$code" in
+        272) symbol="LEFT MOUSE BUTTON" ;;
+        273) symbol="RIGHT MOUSE BUTTON" ;;
+        274) symbol="MIDDLE MOUSE BUTTON" ;;
+        *)   symbol="mouse:${code}" ;;
+      esac
+      echo "${line/mouse:${code}/$symbol}"
+    else
+      echo "$line"
+    fi
+  done
+}
+
+dynamic_bindings() {
+  hyprctl -j binds |
+    jq -r '.[] | {modmask, key, keycode, description, dispatcher, arg} | "\(.modmask),\(.key)@\(.keycode),\(.description),\(.dispatcher),\(.arg)"' |
+    sed -r \
+      -e 's/null//' \
+      -e 's,~/.config/bin/,,' \
+      -e 's,uwsm app -- ,,' \
+      -e 's,uwsm-app -- ,,' \
+      -e 's/@0//' \
+      -e 's/,@/,code:/' \
+      -e 's/^0,/,/' \
+      -e 's/^1,/SHIFT,/' \
+      -e 's/^4,/CTRL,/' \
+      -e 's/^5,/SHIFT CTRL,/' \
+      -e 's/^8,/ALT,/' \
+      -e 's/^9,/SHIFT ALT,/' \
+      -e 's/^12,/CTRL ALT,/' \
+      -e 's/^13,/SHIFT CTRL ALT,/' \
+      -e 's/^64,/SUPER,/' \
+      -e 's/^65,/SUPER SHIFT,/' \
+      -e 's/^68,/SUPER CTRL,/' \
+      -e 's/^69,/SUPER SHIFT CTRL,/' \
+      -e 's/^72,/SUPER ALT,/' \
+      -e 's/^73,/SUPER SHIFT ALT,/' \
+      -e 's/^76,/SUPER CTRL ALT,/' \
+      -e 's/^77,/SUPER SHIFT CTRL ALT,/'
+}
+
+parse_bindings() {
+  awk -F, '{
+    key_combo = $1 " + " $2
+    gsub(/^[ \t]*\+?[ \t]*/, "", key_combo)
+    gsub(/[ \t]+$/, "", key_combo)
+
+    action = $3
+    if (action == "") {
+      for (i = 4; i <= NF; i++) {
+        action = action $i (i < NF ? "," : "")
+      }
+      sub(/,$/, "", action)
+      gsub(/(^|,)[[:space:]]*exec[[:space:]]*,?/, "", action)
+      gsub(/^[ \t]+|[ \t]+$/, "", action)
+    }
+
+    gsub(/\t/, " ", action)
+    gsub(/[ \t]+/, " ", key_combo)
+
+    if (action != "") {
+      printf "%-35s %s\n", key_combo, action
+    }
+  }'
+}
+
+declare -A PRIORITY=(
+  [Terminal]=0
+  [Browser]=1
+  [File manager]=2
+  [Launch apps]=3
+  [Main menu]=4
+  [System menu]=5
+  [Theme menu]=6
+  [Full screen]=7
+  [Full width]=8
+  [Close window]=9
+  [Close all windows]=10
+  [Lock system]=11
+  [Toggle window floating]=12
+  [Toggle window split]=13
+  [Pop window]=14
+  [Universal]=15
+  [Clipboard]=16
+  [Audio controls]=17
+  [Bluetooth controls]=18
+  [Wifi controls]=19
+  [Emoji picker]=20
+  [Color picker]=21
+  [Screenshot]=22
+  [Screenrecording]=23
+  [workspace]=24
+  [Move window to workspace]=25
+  [Move window silently to workspace]=26
+  [Swap window]=27
+  [Move window focus]=28
+  [Resize window]=30
+  [Expand window]=31
+  [Shrink window]=32
+  [scratchpad]=33
+  [notification]=34
+  [Toggle window transparency]=35
+  [Toggle workspace gaps]=36
+  [Toggle nightlight]=37
+  [Toggle locking]=38
+  [group]=94
+  [Scroll active workspace]=95
+  [Cycle to]=96
+  [Reveal active]=97
+  [Apple Display]=98
+  [XF86]=99
+)
+
+prioritize_entries() {
+  local priority_pattern
+  priority_pattern=$(printf '%s\n' "${!PRIORITY[@]}" | tr '\n' '|')
+
+  awk -v pat="$priority_pattern" '
+  BEGIN {
+    n = split(pat, arr, "|")
+    for (i = 1; i <= n; i++) {
+      key = arr[i]
+      p[key] = i - 1
+    }
+  }
+  {
+    line = $0
+    best_prio = 50
+    for (k in p) {
+      if (match(line, k)) {
+        if (p[k] < best_prio) {
+          best_prio = p[k]
+        }
+      }
+    }
+    printf "%d %s\n", best_prio, line
+  }' |
+  sort -k1,1n -k2,2 |
+  cut -d' ' -f2-
+}
+
+output_keybindings() {
+  build_keymap_cache
+
+  {
+    dynamic_bindings
+  } |
+    sort -u |
+    parse_keycodes |
+    parse_bindings |
+    prioritize_entries
+}
+
+output_keybindings
