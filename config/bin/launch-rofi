@@ -75,11 +75,10 @@ show_learn_menu() {
 
 show_trigger_menu() {
     push_menu "show_trigger_menu"
-    case $(menu "Trigger" "  Capture\n󰔎  Share\n󰐕  Toggle\n󰒇  Hardware") in
+    case $(menu "Trigger" "  Capture\n󰔎  Share\n󰐕  Toggle") in
     *Capture*)     show_capture_menu ;;
     *Share*)       show_share_menu ;;
     *Toggle*)      show_toggle_menu ;;
-    *Hardware*)    not_impl "Hardware menu" ;;
     *)             back_menu ;;
     esac
 }
@@ -107,21 +106,20 @@ show_screenrecord_menu() {
 show_share_menu() {
     push_menu "show_share_menu"
     case $(menu "Share" "󰏬  Clipboard\n󰈔  File\n󰉋  Folder") in
-    *Clipboard*)    show_clipboard_menu ;;
-    *File*)         not_impl "Share file" ;;
-    *Folder*)       not_impl "Share folder" ;;
+    *Clipboard*)    cmd-share clipboard ;;
+    *File*)         xdg-terminal-exec --app-id=org.terminal -- bash -c "cmd-share file" ;;
+    *Folder*)       xdg-terminal-exec --app-id=org.terminal -- bash -c "cmd-share folder" ;;
     *)              back_menu ;;
     esac
 }
 
 show_toggle_menu() {
     push_menu "show_toggle_menu"
-    case $(menu "Toggle" "󰃆  Screensaver\n󰟬  Nightlight\n󱫖  Idle Lock\n󰍜  Waybar\n󱂬  Workspace Layout\n󰐭  Window Gaps") in
-    *Screensaver*)    toggle-screensaver ;;
+    case $(menu "Toggle" "󰟬  Nightlight\n󱫖  Idle Lock\n󰍜  Waybar\n󱂬  Workspace Layout\n󰐭  Window Gaps") in
     *Nightlight*)     toggle-nightlight ;;
     *Idle*)           toggle-idle ;;
     *Waybar*)         toggle-waybar ;;
-    *Layout*)         not_impl "Toggle workspace layout" ;;
+    *Layout*)         hyprland-workspace-layout-toggle ;;
     *Gaps*)           hyprland-workspace-toggle-gaps ;;
     *)                back_menu ;;
     esac
@@ -129,12 +127,11 @@ show_toggle_menu() {
 
 show_style_menu() {
     push_menu "show_style_menu"
-    case $(menu "Style" "󰸌  Theme\n󰑹  Font\n󰀻  Background\n󰍙  Hyprland\n󰃆  Screensaver\n󰋙  About") in
+    case $(menu "Style" "󰸌  Theme\n󰑹  Font\n󰀻  Background\n󰍙  Hyprland\n󰋙  About") in
     *Theme*)       not_impl "Theme switching" ;;
     *Font*)        not_impl "Font switching" ;;
     *Background*)  theme-bg-next && exit 0 ;;
     *Hyprland*)    ${EDITOR:-nvim} ~/.config/hypr/looknfeel.conf && exit 0 ;;
-    *Screensaver*) ${EDITOR:-nvim} ~/.config/hypr/screensaver.conf && exit 0 ;;
     *About*)       ${EDITOR:-nvim} ~/.config/hypr/about.conf && exit 0 ;;
     *)             back_menu ;;
     esac
@@ -147,9 +144,9 @@ show_setup_menu() {
     *Wifi*)        launch-wifi && exit 0 ;;
     *Bluetooth*)   launch-bluetooth && exit 0 ;;
     *Power*)       not_impl "Power profile" ;;
-    *Monitors*)    not_impl "Edit monitors.conf" ;;
-    *Keybindings*) not_impl "Edit bindings.conf" ;;
-    *Input*)       not_impl "Edit input.conf" ;;
+    *Monitors*)    edit-config monitors && exit 0 ;;
+    *Keybindings*) edit-config keybindings && exit 0 ;;
+    *Input*)       edit-config input && exit 0 ;;
     *)             back_menu ;;
     esac
 }
@@ -194,8 +191,7 @@ show_about() {
 
 show_system_menu() {
     push_menu "show_system_menu"
-    case $(menu "System" "󰃆  Screensaver\n󰌾  Lock\n󰒲  Suspend\n󰍃  Logout\n󰜉  Restart\n󰐥  Shutdown") in
-    *Screensaver*) toggle-screensaver ;;
+    case $(menu "System" "󰌾  Lock\n󰒲  Suspend\n󰍃  Logout\n󰜉  Restart\n󰐥  Shutdown") in
     *Lock*)        lock-screen && exit 0 ;;
     *Suspend*)     systemctl suspend && exit 0 ;;
     *Logout*)      hyprctl dispatch exit && exit 0 ;;

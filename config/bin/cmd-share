@@ -1,0 +1,29 @@
+#!/bin/bash
+# Usage: cmd-share <clipboard|file|folder>
+# Share clipboard, files, or folders using LocalSend
+
+MODE="$1"
+
+case "$MODE" in
+  clipboard)
+    TEMP=$(mktemp --suffix=.txt)
+    wl-paste >"$TEMP"
+    localsend --headless send "$TEMP"
+    rm -f "$TEMP"
+    ;;
+  file)
+    files=$(find "$HOME" -type f 2>/dev/null | fzf --multi)
+    [[ -z "$files" ]] && exit 0
+    readarray -t FILE_ARRAY <<<"$files"
+    localsend --headless send "${FILE_ARRAY[@]}"
+    ;;
+  folder)
+    folder=$(find "$HOME" -maxdepth 5 -type d 2>/dev/null | fzf)
+    [[ -z "$folder" ]] && exit 0
+    localsend --headless send "$folder"
+    ;;
+  *)
+    echo "Usage: cmd-share <clipboard|file|folder>"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,30 @@
+#!/bin/bash
+# Usage: edit-config <config-name>
+# Opens config file in default editor ($EDITOR or nvim)
+# Without arguments, lists available configs
+
+CONFIG_DIR="$HOME/.config/hypr/conf"
+
+if [[ -z "$1" ]]; then
+    echo "Available configs:"
+    echo ""
+    ls "$CONFIG_DIR"/*.conf 2>/dev/null | xargs -n1 basename
+    echo ""
+    echo "Usage: edit-config <config-name>"
+    echo "       edit-config all"
+    exit 0
+fi
+
+if [[ "$1" == "all" ]]; then
+    exec launch-editor "$CONFIG_DIR"/*.conf
+else
+    CONFIG_FILE="$CONFIG_DIR/$1.conf"
+    
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Config not found: $1.conf"
+        echo "Run 'edit-config' to see available configs"
+        exit 1
+    fi
+    
+    exec launch-editor "$CONFIG_FILE"
+fi

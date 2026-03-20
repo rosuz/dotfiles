@@ -1,0 +1,11 @@
+#!/bin/bash
+# Toggle workspace layout between dwindle and master
+ACTIVE_WORKSPACE=$(hyprctl activeworkspace -j | jq -r '.id')
+CURRENT_LAYOUT=$(hyprctl activeworkspace -j | jq -r '.tiledLayout')
+case "$CURRENT_LAYOUT" in
+  dwindle) NEW_LAYOUT=master ;;
+  master) NEW_LAYOUT=dwindle ;;
+  *) NEW_LAYOUT=dwindle ;;
+esac
+hyprctl keyword workspace $ACTIVE_WORKSPACE, layout:$NEW_LAYOUT
+notify-send "Workspace layout set to $NEW_LAYOUT"
