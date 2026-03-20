@@ -1,0 +1,50 @@
+#!/bin/bash
+# Generate theme configs from templates
+# Copies theme files to current/, then applies templates
+# User templates (templates-user/) override built-in templates
+
+THEMES_DIR="$HOME/.config/themes"
+CURRENT_DIR="$THEMES_DIR/current"
+TEMPLATES_DIR="$HOME/1337/dotfiles/config/themes/templates"
+USER_TEMPLATES_DIR="$HOME/1337/dotfiles/config/themes/templates-user"
+COLORS_FILE="$CURRENT_DIR/colors.toml"
+
+hex_to_rgb() {
+  local hex="${1#\#}"
+  printf "%d,%d,%d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+if [[ ! -f $COLORS_FILE ]]; then
+  echo "Error: $COLORS_FILE not found"
+  exit 1
+fi
+
+sed_script=$(mktemp)
+
+while IFS='=' read -r key value; do
+  key="${key//[\"\' ]/}"
+  [[ $key && $key != \#* && $key != \[* ]] || continue
+  value="${value#*[\"\']}"
+  value="${value%%[\"\']*}"
+
+  printf 's|{{ %s }}|%s|g\n' "$key" "$value"
+  printf 's|{{ %s_strip }}|%s|g\n' "$key" "${value#\#}"
+  if [[ $value =~ ^# ]]; then
+    rgb=$(hex_to_rgb "$value")
+    echo "s|{{ ${key}_rgb }}|${rgb}|g"
+  fi
+done <"$COLORS_FILE" >"$sed_script"
+
+shopt -s nullglob
+
+for tpl in "$USER_TEMPLATES_DIR"/*.tpl "$TEMPLATES_DIR"/*.tpl; do
+  filename=$(basename "$tpl" .tpl)
+  output_path="$CURRENT_DIR/$filename"
+  sed -f "$sed_script" "$tpl" >"$output_path"
+done
+
+rm "$sed_script"
+
+cp "$CURRENT_DIR/swayosd.css" "$HOME/.config/swayosd/style.css" 2>/dev/null
+
+echo "Theme generated successfully"

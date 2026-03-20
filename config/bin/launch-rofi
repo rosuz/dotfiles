@@ -128,7 +128,16 @@ show_toggle_menu() {
 show_style_menu() {
     push_menu "show_style_menu"
     case $(menu "Style" "󰸌  Theme\n󰑹  Font\n󰀻  Background\n󰍙  Hyprland\n󰋙  About") in
-    *Theme*)       not_impl "Theme switching" ;;
+    *Theme*)       
+        selected=$(theme-switch | rofi -dmenu -p "Theme" -i)
+        push_menu "show_theme_menu"
+        if [[ -n "$selected" ]]; then
+            theme-switch "$selected"
+            exit 0
+        else
+            back_menu
+        fi
+        ;;
     *Font*)        not_impl "Font switching" ;;
     *Background*)  theme-bg-next && exit 0 ;;
     *Hyprland*)    ${EDITOR:-nvim} ~/.config/hypr/looknfeel.conf && exit 0 ;;

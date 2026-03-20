@@ -1,9 +1,8 @@
-@theme "~/.config/themes/current/rofi/colors.rasi"
+@theme "~/.config/themes/current/rofi.rasi"
 
 /* ================= Main window ================= */
 window {
     location: center;
-    
     width: 80%;
     height: 79%;
 

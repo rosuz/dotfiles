@@ -1,0 +1,15 @@
+#!/bin/bash
+# Restart all themed components after theme switch
+
+mkdir -p ~/.config/btop/themes
+ln -sf ~/.config/themes/current/btop.theme ~/.config/btop/themes/current.theme
+
+pkill -x waybar 2>/dev/null && waybar &
+touch ~/.config/alacritty/alacritty.toml 2>/dev/null
+hyprctl reload 2>/dev/null
+pkill mako 2>/dev/null && mako &
+pkill swayosd-server 2>/dev/null
+sleep 0.3
+swayosd-server &
+
+notify-send "Theme applied"

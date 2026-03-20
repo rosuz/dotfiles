@@ -1,0 +1,26 @@
+#!/bin/bash
+# Usage: theme [theme-name]
+# List themes if no argument, otherwise switch to specified theme
+
+THEMES_DIR="$HOME/.config/themes"
+
+if [[ -z "$1" ]]; then
+  ls -d "$THEMES_DIR"/*/ | xargs -n1 basename | grep -v -E '^(current|templates|templates-user|next-theme)$'
+else
+  THEME_NAME="$1"
+  THEME_PATH="$THEMES_DIR/$THEME_NAME"
+
+  if [[ ! -d "$THEME_PATH" ]]; then
+    echo "Theme '$THEME_NAME' not found"
+    exit 1
+  fi
+
+  rm -rf "$THEMES_DIR/current"
+  mkdir -p "$THEMES_DIR/current"
+  cp -r "$THEME_PATH"/* "$THEMES_DIR/current/"
+
+  "$HOME/1337/dotfiles/config/bin/generate-theme"
+  "$HOME/1337/dotfiles/config/bin/apply-theme"
+
+  notify-send "Theme switched to $THEME_NAME"
+fi
