@@ -17,6 +17,7 @@ menu() {
 }
 
 declare -a MENU_STACK=()
+current_menu=""
 
 push_menu() {
     if [[ ${#MENU_STACK[@]} -eq 0 ]]; then
@@ -33,12 +34,16 @@ pop_menu() {
 }
 
 back_menu() {
+    if [[ ${#MENU_STACK[@]} -eq 1 ]] && [[ "${MENU_STACK[-1]}" == "$current_menu" ]]; then
+        exit 0
+    fi
     pop_menu
     local prev="${MENU_STACK[-1]}"
     $prev
 }
 
 show_main_menu() {
+    current_menu="show_main_menu"
     push_menu "show_main_menu"
     choice=$(menu "Go" "󰀻  Apps\n󰧑  Learn\n󰔎  Trigger\n󰐕  Style\n󰘗  Setup\n󰉉  Install\n󰭌  Remove\n  Update\n󰋙  About\n󰐥  System")
     case "$choice" in
@@ -57,6 +62,7 @@ show_main_menu() {
 }
 
 show_learn_menu() {
+    current_menu="show_learn_menu"
     push_menu "show_learn_menu"
     case $(menu "Learn" "  Keybindings\n  Hyprland\n󰣇  Arch\n󱆃  Neovim\n󰑲  Bash") in
 *Keybindings)
@@ -74,6 +80,7 @@ show_learn_menu() {
 }
 
 show_trigger_menu() {
+    current_menu="show_trigger_menu"
     push_menu "show_trigger_menu"
     case $(menu "Trigger" "  Capture\n󰔎  Share\n󰐕  Toggle") in
     *Capture*)     show_capture_menu ;;
@@ -84,6 +91,7 @@ show_trigger_menu() {
 }
 
 show_capture_menu() {
+    current_menu="show_capture_menu"
     push_menu "show_capture_menu"
     case $(menu "Capture" "  Screenshot\n󰕰  Screenrecord\n󰑽  Color") in
     *Screenshot*)      cmd-screenshot selection clipboard && exit 0 ;;
@@ -94,6 +102,7 @@ show_capture_menu() {
 }
 
 show_screenrecord_menu() {
+    current_menu="show_screenrecord_menu"
     push_menu "show_screenrecord_menu"
     case $(menu "Screenrecord" "󰕰  Full screen\n󰊄  Selection\n󰈞  Window") in
     *Full\ screen*)    cmd-screenrecord full && exit 0 ;;
@@ -104,6 +113,7 @@ show_screenrecord_menu() {
 }
 
 show_share_menu() {
+    current_menu="show_share_menu"
     push_menu "show_share_menu"
     case $(menu "Share" "󰏬  Clipboard\n󰈔  File\n󰉋  Folder") in
     *Clipboard*)    cmd-share clipboard ;;
@@ -114,6 +124,7 @@ show_share_menu() {
 }
 
 show_toggle_menu() {
+    current_menu="show_toggle_menu"
     push_menu "show_toggle_menu"
     case $(menu "Toggle" "󰟬  Nightlight\n󱫖  Idle Lock\n󰍜  Waybar\n󱂬  Workspace Layout\n󰐭  Window Gaps") in
     *Nightlight*)     toggle-nightlight ;;
@@ -126,18 +137,10 @@ show_toggle_menu() {
 }
 
 show_style_menu() {
+    current_menu="show_style_menu"
     push_menu "show_style_menu"
     case $(menu "Style" "󰸌  Theme\n󰑹  Font\n󰀻  Background\n󰍙  Hyprland\n󰋙  About") in
-    *Theme*)       
-        selected=$(theme-switch | rofi -dmenu -p "Theme" -i)
-        push_menu "show_theme_menu"
-        if [[ -n "$selected" ]]; then
-            theme-switch "$selected"
-            exit 0
-        else
-            back_menu
-        fi
-        ;;
+    *Theme*)       show_theme_menu ;;
     *Font*)        not_impl "Font switching" ;;
     *Background*)  theme-bg-next && exit 0 ;;
     *Hyprland*)    ${EDITOR:-nvim} ~/.config/hypr/looknfeel.conf && exit 0 ;;
@@ -146,7 +149,21 @@ show_style_menu() {
     esac
 }
 
+show_theme_menu()
+{
+    current_menu="show_theme_menu"
+    selected=$(theme-switch | rofi -dmenu -p "Theme" -i)
+    push_menu "show_theme_menu"
+    if [[ -n "$selected" ]]; then
+        theme-switch "$selected"
+        exit 0
+    else
+        back_menu
+    fi
+}
+
 show_setup_menu() {
+    current_menu="show_setup_menu"
     push_menu "show_setup_menu"
     case $(menu "Setup" "󰜌  Audio\n󰤨  Wifi\n󰂯  Bluetooth\n󱐋  Power Profile\n󰍹  Monitors\n  Keybindings\n󰍾  Input") in
     *Audio*)       launch-audio && exit 0 ;;
@@ -161,6 +178,7 @@ show_setup_menu() {
 }
 
 show_install_menu() {
+    current_menu="show_install_menu"
     push_menu "show_install_menu"
     case $(menu "Install" "󰣇  Package\n󰣇  AUR\n  Web App\n󰸌  Theme\n󰀻  Background\n󰑹  Font") in
     *Package*)    not_impl "Install package" ;;
@@ -174,6 +192,7 @@ show_install_menu() {
 }
 
 show_remove_menu() {
+    current_menu="show_remove_menu"
     push_menu "show_remove_menu"
     case $(menu "Remove" "󰣇  Package\n󰸌  Theme") in
     *Package*)    not_impl "Remove package" ;;
@@ -183,6 +202,7 @@ show_remove_menu() {
 }
 
 show_update_menu() {
+    current_menu="show_update_menu"
     push_menu "show_update_menu"
     case $(menu "Update" "󰐕  Config\n󰤎  Process\n󰀡  All") in
     *Config*)     not_impl "Refresh config" ;;
@@ -193,12 +213,14 @@ show_update_menu() {
 }
 
 show_about() {
+    current_menu="show_about"
     push_menu "show_about"
     not_impl "About"
     back_menu
 }
 
 show_system_menu() {
+    current_menu="show_system_menu"
     push_menu "show_system_menu"
     case $(menu "System" "󰌾  Lock\n󰒲  Suspend\n󰍃  Logout\n󰜉  Restart\n󰐥  Shutdown") in
     *Lock*)        lock-screen && exit 0 ;;
@@ -211,6 +233,7 @@ show_system_menu() {
 }
 
 show_clipboard_menu() {
+    current_menu="show_clipboard_menu"
     push_menu "show_clipboard_menu"
     choice=$(menu "Clipboard" "󰇹  Reset clipboard\n$(cmd-clipboard list 2>/dev/null)")
     
@@ -225,4 +248,15 @@ show_clipboard_menu() {
     fi
 }
 
-show_main_menu
+case "${1:-}" in
+system)    show_system_menu ;;
+keybindings) show_learn_menu ;;
+capture)   show_capture_menu ;;
+toggle)    show_toggle_menu ;;
+style)     show_style_menu ;;
+setup)     show_setup_menu ;;
+share)     show_share_menu ;;
+background) theme-bg-next && exit 0 ;;
+theme)     show_style_menu ;;
+*)         show_main_menu ;;
+esac
