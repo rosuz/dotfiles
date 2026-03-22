@@ -1,4 +1,4 @@
-@import "../themes/current/waybar.css";
+@import "../../.local/share/dotfiles/themes/current/waybar.css";
 
 * {
     font-family: 'JetBrainsMono Nerd Font Propo' ;
@@ -31,7 +31,7 @@ button {
     border: 2px solid @accent;
     border-radius: 0px;
     padding: 0 10px;
-    margin: 5 5px;
+    margin: 5px 5px;
 }
 
 #workspaces button:hover {
@@ -59,7 +59,7 @@ button {
     background-color: @background;
     padding: 0 15px;
     color: @foreground;
-    margin: 5 5px;
+    margin: 5px 5px;
 }
 
 #workspaces {

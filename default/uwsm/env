@@ -1,0 +1,8 @@
+# Changes require a restart to take effect.
+
+# Ensure dotfiles bins are in the path
+export DOTFILES_PATH=$HOME/.local/share/dotfiles
+export PATH=$DOTFILES_PATH/bin:$PATH:$HOME/.local/bin
+
+# Set default terminal and editor
+source ~/.config/uwsm/default

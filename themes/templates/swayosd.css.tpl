@@ -1,8 +1,8 @@
-@define-color background-color #2e3440;
-@define-color border-color #81a1c1;
-@define-color label #d8dee9;
-@define-color image #d8dee9;
-@define-color progress #81a1c1;
+@define-color background-color {{ background }};
+@define-color border-color {{ accent }};
+@define-color label {{ foreground }};
+@define-color image {{ foreground }};
+@define-color progress {{ accent }};
 
 window {
   border-radius: 0;

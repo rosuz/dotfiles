@@ -1,0 +1,7 @@
+[[ $- != *i* ]] && return
+
+export DOTFILES_PATH="$HOME/.local/share/dotfiles"
+
+source "$DOTFILES_PATH/default/bash/envs"
+source "$DOTFILES_PATH/default/bash/aliases"
+source "$DOTFILES_PATH/default/bash/functions"

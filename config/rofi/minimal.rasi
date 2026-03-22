@@ -1,4 +1,4 @@
-@theme "~/.config/themes/current/rofi.rasi"
+@theme "../../.local/share/dotfiles/themes/current/rofi.rasi"
 
 /* ================= Main window ================= */
 window {

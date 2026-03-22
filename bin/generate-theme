@@ -3,10 +3,10 @@
 # Copies theme files to current/, then applies templates
 # User templates (templates-user/) override built-in templates
 
-THEMES_DIR="$HOME/.config/themes"
+THEMES_DIR="$HOME/.local/share/dotfiles/themes"
 CURRENT_DIR="$THEMES_DIR/current"
-TEMPLATES_DIR="$HOME/1337/dotfiles/config/themes/templates"
-USER_TEMPLATES_DIR="$HOME/1337/dotfiles/config/themes/templates-user"
+TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates"
+USER_TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates-user"
 COLORS_FILE="$CURRENT_DIR/colors.toml"
 
 hex_to_rgb() {

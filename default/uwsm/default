@@ -1,0 +1,3 @@
+# Default applications
+export EDITOR=nvim
+export VISUAL=$EDITOR
