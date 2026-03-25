@@ -72,4 +72,4 @@ git clone https://github.com/rosuz/hypr_dotfiles.git
 
 ## Credits
 
-Inspired by [Omarchy](https://github.com/basecamp/omarchy) by [DHH](https://github.com/dhh) and [Basecamp](https://basecamp.com/).
+Inspired by [Omarchy](https://github.com/basecamp/omarchy) by [DHH](https://github.com/dhh) and [Basecamp](https://basecamp.com/). MIT License.
