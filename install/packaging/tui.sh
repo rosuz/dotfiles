@@ -5,6 +5,9 @@ gum style "Installing TUI applications..."
 tui_apps=(
   btop
   lazydocker
+  impala
+  wiremix
+  bluetui
 )
 
 remove_if_installed() {

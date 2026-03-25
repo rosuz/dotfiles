@@ -1,25 +1,5 @@
-anchor=top-right
-default-timeout=5000
-width=420
-outer-margin=20
-padding=10,15
-border-size=2
-max-icon-size=32
-font=sans-serif 14px
+include=~/.local/share/dotfiles/default/mako/core.ini
 
 text-color={{ foreground }}
 border-color={{ accent }}
 background-color={{ background }}
-
-[app-name=Spotify]
-invisible=1
-
-[mode=do-not-disturb]
-invisible=true
-
-[mode=do-not-disturb app-name=notify-send]
-invisible=false
-
-[urgency=critical]
-default-timeout=0
-layer=overlay

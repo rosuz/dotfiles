@@ -11,7 +11,9 @@ if [ -f "$HOME/.bashrc" ]; then
     gum style "Found existing dotfiles configuration in ~/.bashrc"
   else
     gum style "Backing up existing ~/.bashrc"
-    cp "$HOME/.bashrc" "$HOME/.bashrc.backup.$(date +%Y%m%d%H%M%S)"
+    mkdir -p "$HOME/Backups/bashrc"
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    tar -czf "$HOME/Backups/bashrc/bashrc.backup_${TIMESTAMP}.tar.gz" -C "$HOME" .bashrc
     
     gum style "Appending dotfiles configuration to ~/.bashrc"
     echo "" >> "$HOME/.bashrc"
@@ -29,8 +31,8 @@ echo ""
 gum style "Setting up UWSM environment..."
 
 mkdir -p "$HOME/.config/uwsm"
-cp "$DOTFILES_PATH/default/uwsm/env" "$HOME/.config/uwsm/env"
-cp "$DOTFILES_PATH/default/uwsm/default" "$HOME/.config/uwsm/default"
+cp "$DOTFILES_PATH/config/uwsm/env" "$HOME/.config/uwsm/env"
+cp "$DOTFILES_PATH/config/uwsm/default" "$HOME/.config/uwsm/default"
 
 gum style --foreground 2 "UWSM environment configured!"
 

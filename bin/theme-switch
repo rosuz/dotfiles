@@ -5,7 +5,7 @@
 THEMES_DIR="$HOME/.local/share/dotfiles/themes"
 
 if [[ -z "$1" ]]; then
-  ls -d "$THEMES_DIR"/*/ | xargs -n1 basename | grep -v -E '^(current|templates|templates-user|next-theme)$'
+  ls -d "$THEMES_DIR"/*/ | xargs -n1 basename | grep -v -E '^(current|templates|templates-user|next)$'
 else
   THEME_NAME="$1"
   THEME_PATH="$THEMES_DIR/$THEME_NAME"
@@ -15,11 +15,15 @@ else
     exit 1
   fi
 
-  rm -rf "$THEMES_DIR/current"
-  mkdir -p "$THEMES_DIR/current"
-  cp -r "$THEME_PATH"/* "$THEMES_DIR/current/"
+  rm -rf "$THEMES_DIR/next"
+  mkdir -p "$THEMES_DIR/next"
+  cp -r "$THEME_PATH"/* "$THEMES_DIR/next/"
 
-  "$HOME/.local/share/dotfiles/bin/generate-theme"
+  TARGET=next "$HOME/.local/share/dotfiles/bin/generate-theme"
+
+  rm -rf "$THEMES_DIR/current"
+  mv "$THEMES_DIR/next" "$THEMES_DIR/current"
+
   "$HOME/.local/share/dotfiles/bin/apply-theme"
 
   notify-send "Theme switched to $THEME_NAME"

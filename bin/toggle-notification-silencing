@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if makoctl mode 2>/dev/null | grep -q 'do-not-disturb'; then
+  makoctl set-mode default
+else
+  makoctl set-mode do-not-disturb
+fi

@@ -4,7 +4,8 @@
 # User templates (templates-user/) override built-in templates
 
 THEMES_DIR="$HOME/.local/share/dotfiles/themes"
-CURRENT_DIR="$THEMES_DIR/current"
+TARGET="${TARGET:-current}"
+CURRENT_DIR="$THEMES_DIR/$TARGET"
 TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates"
 USER_TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates-user"
 COLORS_FILE="$CURRENT_DIR/colors.toml"
@@ -21,11 +22,48 @@ fi
 
 sed_script=$(mktemp)
 
+# Default values for semantic colors (fallback if not defined in theme)
+# These are Catppuccin Mocha inspired defaults
+default_surface0="#313244"
+default_surface1="#45475a"
+default_surface2="#585b70"
+default_overlay0="#6c7086"
+default_overlay1="#7f849c"
+
+# Read colors.toml and set fallbacks
 while IFS='=' read -r key value; do
   key="${key//[\"\' ]/}"
   [[ $key && $key != \#* && $key != \[* ]] || continue
   value="${value#*[\"\']}"
   value="${value%%[\"\']*}"
+  
+  case "$key" in
+    surface0) [[ -n "$value" ]] && default_surface0="$value" ;;
+    surface1) [[ -n "$value" ]] && default_surface1="$value" ;;
+    surface2) [[ -n "$value" ]] && default_surface2="$value" ;;
+    overlay0) [[ -n "$value" ]] && default_overlay0="$value" ;;
+    overlay1) [[ -n "$value" ]] && default_overlay1="$value" ;;
+  esac
+done <"$COLORS_FILE"
+
+# Write fallbacks to sed script first
+{
+  printf 's|{{ surface0 }}|%s|g\n' "$default_surface0"
+  printf 's|{{ surface1 }}|%s|g\n' "$default_surface1"
+  printf 's|{{ surface2 }}|%s|g\n' "$default_surface2"
+  printf 's|{{ overlay0 }}|%s|g\n' "$default_overlay0"
+  printf 's|{{ overlay1 }}|%s|g\n' "$default_overlay1"
+} >"$sed_script"
+
+# Read colors.toml again for theme-specific values (append to sed script)
+while IFS='=' read -r key value; do
+  key="${key//[\"\' ]/}"
+  [[ $key && $key != \#* && $key != \[* ]] || continue
+  value="${value#*[\"\']}"
+  value="${value%%[\"\']*}"
+  
+  # Skip semantic colors - already handled above
+  [[ "$key" =~ ^(surface0|surface1|surface2|overlay0|overlay1)$ ]] && continue
 
   printf 's|{{ %s }}|%s|g\n' "$key" "$value"
   printf 's|{{ %s_strip }}|%s|g\n' "$key" "${value#\#}"
@@ -33,7 +71,7 @@ while IFS='=' read -r key value; do
     rgb=$(hex_to_rgb "$value")
     echo "s|{{ ${key}_rgb }}|${rgb}|g"
   fi
-done <"$COLORS_FILE" >"$sed_script"
+done <"$COLORS_FILE" >>"$sed_script"
 
 shopt -s nullglob
 

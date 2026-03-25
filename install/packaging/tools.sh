@@ -17,6 +17,7 @@ tools=(
   grim
   slurp
   wl-clipboard
+  iwd
 )
 
 run_with_helper "$aur_helper" "${tools[@]}"

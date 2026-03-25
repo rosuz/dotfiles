@@ -1,6 +1,11 @@
 @define-color foreground {{ foreground }};
 @define-color background {{ background }};
 @define-color accent {{ accent }};
+@define-color surface0 {{ surface0 }};
+@define-color surface1 {{ surface1 }};
+@define-color surface2 {{ surface2 }};
+@define-color overlay0 {{ overlay0 }};
+@define-color overlay1 {{ overlay1 }};
 @define-color color0 {{ color0 }};
 @define-color color1 {{ color1 }};
 @define-color color2 {{ color2 }};

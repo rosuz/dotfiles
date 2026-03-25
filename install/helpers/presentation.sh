@@ -1,16 +1,5 @@
 #!/bin/bash
 
-if ! command -v gum &>/dev/null; then
-  echo "gum not found. Installing..."
-  if command -v yay &>/dev/null; then
-    yay -S --noconfirm gum
-  elif command -v paru &>/dev/null; then
-    paru -S --noconfirm gum
-  elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm gum
-  fi
-fi
-
 if [[ -e /dev/tty ]]; then
   TERM_SIZE=$(stty size 2>/dev/null </dev/tty)
   if [[ -n $TERM_SIZE ]]; then

@@ -11,8 +11,8 @@ fi
 WINDOW_PATTERN="$1"
 LAUNCH_COMMAND="${2:-"uwsm-app -- $WINDOW_PATTERN"}"
 
-# First try window class/title (for regular apps)
-WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$WINDOW_PATTERN" '.[]|select((.class|test("\\b" + $p + "\\b";"i")) or (.title|test("\\b" + $p + "\\b";"i")))|.address' | head -n1)
+# First try window class (for regular apps)
+WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$WINDOW_PATTERN" '.[]|select(.class|test("\\b" + $p + "\\b";"i"))|.address' | head -n1)
 
 # If not found, try PID-based search (for TUIs running in terminals)
 if [[ -z "$WINDOW_ADDRESS" ]]; then

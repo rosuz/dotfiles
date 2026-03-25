@@ -4,7 +4,6 @@ gum style "Installing desktop applications..."
 
 apps=(
   nautilus
-  obsidian
   signal-desktop
 )
 

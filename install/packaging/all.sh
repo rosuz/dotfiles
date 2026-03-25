@@ -36,6 +36,7 @@ else
       "${packages[@]}"
   }
 
+  clear_logo
   if gum confirm "Install packages?"; then
     source "$DOTFILES_INSTALL/packaging/base.sh"
     source "$DOTFILES_INSTALL/packaging/tools.sh"

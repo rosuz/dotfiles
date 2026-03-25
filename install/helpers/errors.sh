@@ -6,15 +6,6 @@ show_cursor() {
   printf "\033[?25h"
 }
 
-show_log_tail() {
-  if [[ -f "$DOTFILES_INSTALL_LOG_FILE" ]]; then
-    tail -n 10 "$DOTFILES_INSTALL_LOG_FILE" 2>/dev/null | while IFS= read -r line; do
-      gum style "$line"
-    done
-    echo
-  fi
-}
-
 show_failed_script_or_command() {
   if [[ -n "${CURRENT_SCRIPT:-}" ]]; then
     gum style "Failed script: $CURRENT_SCRIPT"
@@ -32,40 +23,19 @@ catch_errors() {
 
   local exit_code=$?
 
-  stop_log_output
   show_cursor
 
   clear_logo
 
   gum style --foreground 1 "Installation stopped!"
-  show_log_tail
-
   gum style "This command halted with exit code $exit_code:"
   show_failed_script_or_command
-  echo
+  echo ""
 
-  options=()
-  options+=("Retry installation")
-  options+=("View full log")
-  options+=("Exit")
+  gum style --foreground 6 "Press Enter to exit..."
+  read
 
-  choice=$(gum choose "${options[@]}" --header "What would you like to do?")
-
-  case "$choice" in
-    "Retry installation")
-      bash "$DOTFILES_INSTALL/install.sh"
-      ;;
-    "View full log")
-      if command -v less &>/dev/null; then
-        less "$DOTFILES_INSTALL_LOG_FILE"
-      else
-        tail "$DOTFILES_INSTALL_LOG_FILE"
-      fi
-      ;;
-    "Exit" | "")
-      exit 1
-      ;;
-  esac
+  exit 1
 }
 
 exit_handler() {
@@ -74,7 +44,6 @@ exit_handler() {
   if (( exit_code != 0 )) && [[ "$ERROR_HANDLING" != "true" ]]; then
     catch_errors
   else
-    stop_log_output
     show_cursor
   fi
 }
