@@ -1,6 +1,6 @@
 # hypr_dotfiles
 
-A minimalist [Hyprland](https://hyprland.org/) setup inspired by [Omarchy](https://github.com/basecamp/omarchy).
+A minimalist [Hyprland](https://hyprland.org/) setup.
 
 ## Installation
 
