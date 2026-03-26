@@ -24,6 +24,11 @@ else
   rm -rf "$THEMES_DIR/current"
   mv "$THEMES_DIR/next" "$THEMES_DIR/current"
 
+  first_bg=$(ls "$THEMES_DIR/current/backgrounds"/*.png "$THEMES_DIR/current/backgrounds"/*.jpg 2>/dev/null | head -1)
+  if [[ -n "$first_bg" ]]; then
+    ln -nsf "backgrounds/$(basename "$first_bg")" "$THEMES_DIR/current/background"
+  fi
+
   "$HOME/.local/share/dotfiles/bin/apply-theme"
 
   notify-send "Theme switched to $THEME_NAME"

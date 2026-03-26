@@ -6,6 +6,17 @@ ln -sf ~/.local/share/dotfiles/themes/current/btop.theme ~/.config/btop/themes/c
 mkdir -p ~/.config/mako
 ln -sf ~/.local/share/dotfiles/themes/current/mako.ini ~/.config/mako/config
 
+if [[ -d "$HOME/.local/share/dotfiles/themes/current/backgrounds" ]]; then
+  first_bg=$(ls "$HOME/.local/share/dotfiles/themes/current/backgrounds"/*.png "$HOME/.local/share/dotfiles/themes/current/backgrounds"/*.jpg 2>/dev/null | head -1)
+  if [[ -n "$first_bg" ]]; then
+    ln -nsf "backgrounds/$(basename "$first_bg")" "$HOME/.local/share/dotfiles/themes/current/background"
+  fi
+fi
+
+pkill -x hyprpaper 2>/dev/null || true
+sleep 0.3
+hyprpaper &
+
 pkill -x waybar 2>/dev/null || true
 sleep 0.3
 waybar &

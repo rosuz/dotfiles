@@ -1,26 +1,42 @@
 #!/bin/bash
 
-WALLPAPER_DIR="$HOME/.config/themes/current/backgrounds"
-CONFIG="$HOME/.config/hypr/hyprpaper.conf"
+THEMES_DIR="$HOME/.local/share/dotfiles/themes"
+CURRENT_LINK="$THEMES_DIR/current/background"
+WALLPAPER_DIR="$THEMES_DIR/current/backgrounds"
 
-current=$(grep "path = " "$CONFIG" | sed 's|path = ||')
+if [[ ! -d "$WALLPAPER_DIR" ]]; then
+  notify-send "No backgrounds directory found" -t 2000
+  exit 1
+fi
 
 shopt -s nullglob
 wallpapers=("$WALLPAPER_DIR"/*.png "$WALLPAPER_DIR"/*.jpg)
 shopt -u nullglob
 
-wallpapers=("${wallpapers[@]##*/}")
+if ((${#wallpapers[@]} == 0)); then
+  notify-send "No wallpapers found" -t 2000
+  exit 1
+fi
 
-current_name=$(basename "$current")
+if [[ -L "$CURRENT_LINK" ]]; then
+  current_target=$(readlink "$CURRENT_LINK")
+  current_name=$(basename "$current_target")
+else
+  current_name=""
+fi
+
 for i in "${!wallpapers[@]}"; do
-  if [[ "${wallpapers[$i]}" == "$current_name" ]]; then
+  if [[ "$(basename "${wallpapers[$i]}")" == "$current_name" ]]; then
     prev_idx=$(( (i - 1 + ${#wallpapers[@]}) % ${#wallpapers[@]} ))
     break
   fi
 done
 
-new_wallpaper="$WALLPAPER_DIR/${wallpapers[$prev_idx]}"
-
-sed -i "s|path = .*|path = $new_wallpaper|" "$CONFIG"
-
-hyprpaper &
+new_wallpaper="${wallpapers[$prev_idx]:-}"
+if [[ -n "$new_wallpaper" ]]; then
+  ln -nsf "backgrounds/$(basename "$new_wallpaper")" "$CURRENT_LINK"
+  
+  pkill -x hyprpaper 2>/dev/null || true
+  sleep 0.3
+  hyprpaper &
+fi
