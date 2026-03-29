@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ERROR_HANDLING=false
 
@@ -8,9 +9,9 @@ show_cursor() {
 
 show_failed_script_or_command() {
   if [[ -n "${CURRENT_SCRIPT:-}" ]]; then
-    gum style "Failed script: $CURRENT_SCRIPT"
+    error "Failed script: $CURRENT_SCRIPT"
   else
-    gum style "Command failed"
+    error "Command failed"
   fi
 }
 
@@ -27,12 +28,12 @@ catch_errors() {
 
   clear_logo
 
-  gum style --foreground 1 "Installation stopped!"
-  gum style "This command halted with exit code $exit_code:"
+  error "Installation stopped!"
+  info "This command halted with exit code $exit_code:"
   show_failed_script_or_command
   echo ""
 
-  gum style --foreground 6 "Press Enter to exit..."
+  question "Press Enter to exit..."
   read
 
   exit 1

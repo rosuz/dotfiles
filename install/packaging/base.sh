@@ -1,8 +1,10 @@
 #!/bin/bash
+set -euo pipefail
 
-gum style "Installing Hyprland extras..."
+info "Installing Hyprland and extras..."
 
-hyprland_extras=(
+hyprland_packages=(
+  hyprland
   hypridle
   hyprlock
   hyprpaper
@@ -10,4 +12,4 @@ hyprland_extras=(
   hyprpicker
 )
 
-run_with_helper "$aur_helper" "${hyprland_extras[@]}"
+run_with_helper "$aur_helper" "${hyprland_packages[@]}"

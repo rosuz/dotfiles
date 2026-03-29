@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Toggle workspace layout between dwindle and master
 ACTIVE_WORKSPACE=$(hyprctl activeworkspace -j | jq -r '.id')
 CURRENT_LAYOUT=$(hyprctl activeworkspace -j | jq -r '.tiledLayout')

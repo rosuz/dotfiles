@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+set -euo pipefail
 
 not_impl() {
     notify-send "$1" "need implementation" -u low

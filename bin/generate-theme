@@ -1,13 +1,13 @@
 #!/bin/bash
-# Generate theme configs from templates
-# Copies theme files to current/, then applies templates
-# User templates (templates-user/) override built-in templates
+set -euo pipefail
 
-THEMES_DIR="$HOME/.local/share/dotfiles/themes"
+DOTFILES_PATH="$HOME/.local/share/dotfiles"
+
+THEMES_DIR="$DOTFILES_PATH/themes"
 TARGET="${TARGET:-current}"
 CURRENT_DIR="$THEMES_DIR/$TARGET"
-TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates"
-USER_TEMPLATES_DIR="$HOME/.local/share/dotfiles/themes/templates-user"
+TEMPLATES_DIR="$DOTFILES_PATH/themes/templates"
+USER_TEMPLATES_DIR="$DOTFILES_PATH/themes/templates-user"
 COLORS_FILE="$CURRENT_DIR/colors.toml"
 
 hex_to_rgb() {

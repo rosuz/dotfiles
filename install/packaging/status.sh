@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-gum style "Installing status bar and notifications..."
+info "Installing status bar and notifications..."
 
 status_tools=(
   waybar

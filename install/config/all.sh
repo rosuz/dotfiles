@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 source "$DOTFILES_INSTALL/config/links.sh"
 source "$DOTFILES_INSTALL/config/shell.sh"

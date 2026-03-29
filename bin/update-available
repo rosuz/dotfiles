@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 DOTFILES_PATH="$HOME/.local/share/dotfiles"
 

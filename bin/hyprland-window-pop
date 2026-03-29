@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Toggle to pop-out a tile to stay fixed on a display basis.
 

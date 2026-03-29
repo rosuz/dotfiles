@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Clipboard manager - command-based, no rofi
 # Usage: clipboard <command> [args]
 # Commands:

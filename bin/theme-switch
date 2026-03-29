@@ -1,8 +1,8 @@
 #!/bin/bash
-# Usage: theme [theme-name]
-# List themes if no argument, otherwise switch to specified theme
+set -euo pipefail
 
-THEMES_DIR="$HOME/.local/share/dotfiles/themes"
+DOTFILES_PATH="$HOME/.local/share/dotfiles"
+THEMES_DIR="$DOTFILES_PATH/themes"
 
 if [[ -z "$1" ]]; then
   ls -d "$THEMES_DIR"/*/ | xargs -n1 basename | grep -v -E '^(current|templates|templates-user|next)$'
@@ -19,7 +19,7 @@ else
   mkdir -p "$THEMES_DIR/next"
   cp -r "$THEME_PATH"/* "$THEMES_DIR/next/"
 
-  TARGET=next "$HOME/.local/share/dotfiles/bin/generate-theme"
+  TARGET=next "$DOTFILES_PATH/bin/generate-theme"
 
   rm -rf "$THEMES_DIR/current"
   mv "$THEMES_DIR/next" "$THEMES_DIR/current"
@@ -29,7 +29,7 @@ else
     ln -nsf "backgrounds/$(basename "$first_bg")" "$THEMES_DIR/current/background"
   fi
 
-  "$HOME/.local/share/dotfiles/bin/apply-theme"
+  "$DOTFILES_PATH/bin/apply-theme"
 
   notify-send "Theme switched to $THEME_NAME"
 fi

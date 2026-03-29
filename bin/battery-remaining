@@ -1,10 +1,17 @@
 #!/bin/bash
+set -euo pipefail
 
 # Returns the battery percentage remaining as an integer.
 # Used by the battery monitor and the Ctrl + Shift + Super + B hotkey.
 
-upower -i $(upower -e | grep BAT) \
-| awk -F: '/percentage/ {
+BATTERY=$(upower -e | grep BAT)
+
+if [[ -z "$BATTERY" ]]; then
+    echo "0"
+    exit 0
+fi
+
+upower -i "$BATTERY" | awk -F: '/percentage/ {
     gsub(/[%[:space:]]/, "", $2);
     val=$2;
     printf("%d\n", (val+0.5))

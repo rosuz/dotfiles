@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Launch the wifi controls (provided by the impala TUI).
 # Attempts to unblock the wifi service first in case it should be been blocked.

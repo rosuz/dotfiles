@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-gum style "Installing desktop applications..."
+info "Installing desktop applications..."
 
 apps=(
   nautilus

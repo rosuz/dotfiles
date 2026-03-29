@@ -1,6 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
-THEMES_DIR="$HOME/.local/share/dotfiles/themes"
+DOTFILES_PATH="$HOME/.local/share/dotfiles"
+THEMES_DIR="$DOTFILES_PATH/themes"
 CURRENT_LINK="$THEMES_DIR/current/background"
 WALLPAPER_DIR="$THEMES_DIR/current/backgrounds"
 

@@ -1,10 +1,12 @@
 #!/bin/bash
+set -euo pipefail
 
-gum style "Installing TUI applications..."
+info "Installing TUI applications..."
 
 tui_apps=(
   btop
   lazydocker
+  lazygit
   impala
   wiremix
   bluetui
@@ -13,7 +15,7 @@ tui_apps=(
 remove_if_installed() {
   for pkg in "$@"; do
     if pacman -Q "$pkg" &>/dev/null; then
-      gum style "Removing conflicting package: $pkg"
+      info "Removing conflicting package: $pkg"
       sudo pacman -Rns --noconfirm "$pkg"
     fi
   done

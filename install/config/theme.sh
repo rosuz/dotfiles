@@ -1,8 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 clear_logo
 
-gum style --foreground 3 "Theme Selection"
+info "Theme Selection"
 
 AVAILABLE_THEMES=()
 while IFS= read -r theme; do
@@ -12,20 +13,22 @@ while IFS= read -r theme; do
 done < <(find "$DOTFILES_PATH/themes" -mindepth 1 -maxdepth 1 -type d | sort)
 
 if [[ ${#AVAILABLE_THEMES[@]} -eq 0 ]]; then
-  gum style --foreground 1 "No themes found!"
+  error "No themes found!"
   exit 1
 fi
 
-gum style "Available themes:"
-
-SELECTED_THEME=$(gum choose "${AVAILABLE_THEMES[@]}" --header "Which theme would you like to install?")
+echo "Available themes:"
+select opt in "${AVAILABLE_THEMES[@]}"; do
+  SELECTED_THEME="$opt"
+  break
+done
 
 if [[ -z "$SELECTED_THEME" ]]; then
-  gum style "No theme selected, using default (nord)"
+  info "No theme selected, using default (nord)"
   SELECTED_THEME="nord"
 fi
 
-gum style "Setting up theme: $SELECTED_THEME"
+info "Setting up theme: $SELECTED_THEME"
 
 rm -rf "$DOTFILES_PATH/themes/current"
 mkdir -p "$DOTFILES_PATH/themes/current"
@@ -37,4 +40,4 @@ mkdir -p ~/.config/btop/themes
 rm -f ~/.config/btop/themes/current.theme
 cp "$DOTFILES_PATH/themes/current/btop.theme" ~/.config/btop/themes/current.theme
 
-gum style --foreground 2 "Theme '$SELECTED_THEME' installed!"
+success "Theme '$SELECTED_THEME' installed!"

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Launch the audio controls TUI (provided by wiremix).
 
