@@ -22,7 +22,6 @@ tools=(
   alacritty
   xdg-utils
   neovim
-  gh
   pamixer
   wf-recorder
   wayfreeze
