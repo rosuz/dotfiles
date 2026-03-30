@@ -1,22 +1,24 @@
-# hypr_dotfiles
+# Hyprland Dotfiles
 
-A minimalist [Hyprland](https://hyprland.org/) setup.
+A [Hyprland](https://hyprland.org/) dotfiles setup inspired by [Omarchy](https://github.com/basecamp/omarchy).
+Built with simplicity, reproducibility, and learning in mind.
 
 ## Installation
 
 ```bash
 git clone https://github.com/rosuz/hypr_dotfiles.git
-./install.sh
+cd hypr_dotfiles
+./setup.sh
 ```
 
 ## How It Works
 
 ```
 ~/.local/share/dotfiles/   # Main dotfiles (git repo)
-├── config/                # App configs → symlinked to ~/.config/
+├── config/                # App configs → copied to ~/.config/
 ├── default/               # Default configs (Hyprland, shell, etc.)
 ├── themes/                # Theme files + generated configs
-├── bin/                   # Scripts and commands
+├── bin/                   # Scripts (accessible via PATH)
 └── install/               # Installation system
 
 ~/.config/                 # Application configs
@@ -25,6 +27,14 @@ git clone https://github.com/rosuz/hypr_dotfiles.git
 ├── rofi/                  # Launcher
 └── ...                    # Other app configs
 ```
+
+## PATH Setup
+
+The bin directory is automatically added to PATH via:
+- `~/.bashrc` (for shell)
+- `~/.config/uwsm/env` (for UWSM session)
+
+No symlinks needed - scripts are accessible from anywhere.
 
 ## Keybindings
 
