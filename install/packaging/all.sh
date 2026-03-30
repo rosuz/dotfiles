@@ -16,11 +16,9 @@ run_with_helper() {
 
   info "Installing: ${packages[*]}"
   "$helper" -S --needed --noconfirm \
-    --answerclean All \
-    --answerdiff None \
-    --removemake \
-    --cleanafter \
-    "${packages[@]}"
+  --removemake \
+  --cleanafter \
+  "${packages[@]}"
 }
 
 clear_logo
