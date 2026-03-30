@@ -18,15 +18,4 @@ for item in "$DOTFILES_PATH/config"/*; do
   fi
 done
 
-info "Setting up bin scripts..."
-mkdir -p "$HOME/.local/bin"
-for script in "$DOTFILES_PATH/bin"/*; do
-  if [ -f "$script" ]; then
-    script_name=$(basename "$script")
-    rm -f "$HOME/.local/bin/$script_name"
-    ln -s "$script" "$HOME/.local/bin/$script_name"
-    info "  ~/.local/bin/$script_name"
-  fi
-done
-
 success "Config files copied!"
