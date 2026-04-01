@@ -1,3 +1,0 @@
-export EDITOR="nvim"
-export VISUAL="$EDITOR"
-export DOTFILES_PATH="$HOME/.local/share/dotfiles"

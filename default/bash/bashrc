@@ -1,7 +1,25 @@
 [[ $- != *i* ]] && return
 
-export DOTFILES_PATH="$HOME/.local/share/dotfiles"
+iatest=$(expr index "$-" i)
 
-source "$DOTFILES_PATH/default/bash/envs"
-source "$DOTFILES_PATH/default/bash/aliases"
-source "$DOTFILES_PATH/default/bash/functions"
+if [ -f /usr/bin/fastfetch ]; then
+  fastfetch
+fi
+
+if [ -f "$HOME/.bashrc_custom" ]; then
+  source "$HOME/.bashrc_custom"
+fi
+
+for f in ".local/share/dotfiles/default/bash"/*; do
+  if [ ! -d "$f" ]; then
+    filename=$(basename "$f")
+    override="$HOME/.bashrc.d/$filename"
+    [[ -f "$override" ]] && source "$override" || source "$f"
+  fi
+done
+
+if [ -f /usr/share/bash-completion/bash_completion ]; then
+  . /usr/share/bash-completion/bash_completion
+elif [ -f /etc/bash_completion ]; then
+  . /etc/bash_completion
+fi

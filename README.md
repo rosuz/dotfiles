@@ -82,4 +82,6 @@ No symlinks needed - scripts are accessible from anywhere.
 
 ## Credits
 
-Inspired by [Omarchy](https://github.com/basecamp/omarchy) by [DHH](https://github.com/dhh) and [Basecamp](https://basecamp.com/). MIT License.
+**Hyprland config**: Inspired by [Omarchy](https://github.com/basecamp/omarchy) by [DHH](https://github.com/dhh) and [Basecamp](https://basecamp.com/). MIT License.
+
+**Bash configuration**: Based on [ChrisTitusTech/mybash](https://github.com/ChrisTitusTech/mybash).
