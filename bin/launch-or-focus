@@ -11,30 +11,10 @@ fi
 
 WINDOW_PATTERN="$1"
 LAUNCH_COMMAND="${2:-"uwsm-app -- $WINDOW_PATTERN"}"
+WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$WINDOW_PATTERN" '.[]|select((.class // "" | test("\\b" + $p + "\\b";"i")) or (.title // "" | test("\\b" + $p + "\\b";"i")))|.address' | head -n1)
 
-# First try window class (for regular apps)
-WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$WINDOW_PATTERN" '.[]|select(.class|test("\\b" + $p + "\\b";"i"))|.address' | head -n1)
-
-# If not found, try PID-based search (for TUIs running in terminals)
-if [[ -z "$WINDOW_ADDRESS" ]]; then
-  # Find the process by name
-  PID=$(pgrep -f "$WINDOW_PATTERN" | head -1)
-  if [[ -n "$PID" ]]; then
-    # Find the window that has this PID or is a child of this PID
-    WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg pid "$PID" '.[] | select(.pid == ( $pid | tonumber )) | .address' | head -n1)
-    
-    # If still not found, try finding by checking child processes
-    if [[ -z "$WINDOW_ADDRESS" ]]; then
-      CHILD_PID=$(pgrep -P "$PID" | head -1)
-      if [[ -n "$CHILD_PID" ]]; then
-        WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg pid "$CHILD_PID" '.[] | select(.pid == ( $pid | tonumber )) | .address' | head -n1)
-      fi
-    fi
-  fi
-fi
-
-if [[ -n "$WINDOW_ADDRESS" ]]; then
+if [[ -n $WINDOW_ADDRESS ]]; then
   hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS"
 else
-  eval "$LAUNCH_COMMAND"
+  eval exec setsid $LAUNCH_COMMAND
 fi
