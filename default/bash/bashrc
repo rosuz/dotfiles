@@ -6,11 +6,7 @@ if [ -f /usr/bin/fastfetch ]; then
   fastfetch
 fi
 
-if [ -f "$HOME/.bashrc_custom" ]; then
-  source "$HOME/.bashrc_custom"
-fi
-
-for f in ".local/share/dotfiles/default/bash"/*; do
+for f in "$HOME/.local/share/dotfiles/default/bash"/*; do
   if [ ! -d "$f" ]; then
     filename=$(basename "$f")
     override="$HOME/.bashrc.d/$filename"
