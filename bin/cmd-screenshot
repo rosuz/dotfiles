@@ -49,17 +49,17 @@ esac
 case "$OUTPUT" in
   clipboard)
     wl-copy < "$tmp"; rm -f "$tmp"
-    notify-send "Screenshot copied to clipboard"
+    notify-send "Screenshot copied to clipboard" || true
     ;;
   save)
     file="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
     mv -f "$tmp" "$file"
-    notify-send "Screenshot saved" "$file"
+    notify-send "Screenshot saved" "$file" || true
     ;;
   both)
     wl-copy < "$tmp"
     file="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H-%M-%S).png"
     mv -f "$tmp" "$file"
-    notify-send "Screenshot saved and copied" "$file"
+    notify-send "Screenshot saved and copied" "$file" || true
     ;;
 esac

@@ -7,7 +7,7 @@ CURRENT_LINK="$THEMES_DIR/current/background"
 WALLPAPER_DIR="$THEMES_DIR/current/backgrounds"
 
 if [[ ! -d "$WALLPAPER_DIR" ]]; then
-  notify-send "No backgrounds directory found" -t 2000
+  notify-send "No backgrounds directory found" -t 2000 || true
   exit 1
 fi
 
@@ -16,7 +16,7 @@ wallpapers=("$WALLPAPER_DIR"/*.png "$WALLPAPER_DIR"/*.jpg)
 shopt -u nullglob
 
 if ((${#wallpapers[@]} == 0)); then
-  notify-send "No wallpapers found" -t 2000
+  notify-send "No wallpapers found" -t 2000 || true
   exit 1
 fi
 

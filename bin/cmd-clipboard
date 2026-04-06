@@ -19,13 +19,15 @@ case "$COMMAND" in
     cliphist decode "$ID" | wl-copy
     ;;
   reset)
-    pkill wl-paste 2>/dev/null
-    pkill cliphist 2>/dev/null
-    printf "" | wl-copy
+    pkill wl-paste 2>/dev/null || true
+    pkill cliphist 2>/dev/null || true
+    printf "" | wl-copy || true
     rm -rf ~/.cache/cliphist/db
     sleep 0.2
-    wl-paste --watch cliphist store >/dev/null 2>&1 & disown
-    notify-send "Clipboard history reset"
+    (
+      wl-paste --watch cliphist store >/dev/null 2>&1 &
+    )
+    notify-send "Clipboard history reset" || true
     ;;
   *)
     echo "Usage: clipboard <list|select <id>|reset>"

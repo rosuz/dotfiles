@@ -5,7 +5,7 @@ DOTFILES_PATH="$HOME/.local/share/dotfiles"
 
 # Skip service restarts if not inside a Hyprland session
 if [[ "$XDG_SESSION_TYPE" == "tty" ]]; then
-    exit 0
+  exit 0
 fi
 
 mkdir -p ~/.config/btop/themes
