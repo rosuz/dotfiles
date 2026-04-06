@@ -6,26 +6,63 @@ ACTION="${1:-}"
 RECORD_DIR="$HOME/Pictures/Screenrecord"
 FILENAME="record_$(date +%Y%m%d_%H%M%S).mp4"
 
-record() {
+get_recorder() {
+  if command -v gpu-screen-recorder &>/dev/null; then
+    echo "gpu-screen-recorder"
+  elif command -v wf-recorder &>/dev/null; then
+    echo "wf-recorder"
+  else
+    echo ""
+  fi
+}
+
+start_recording() {
+  local recorder="$1"
+  local output="$2"
+  local geometry="${3:-}"
+  
   mkdir -p "$RECORD_DIR"
   local filepath="$RECORD_DIR/$FILENAME"
-  wf-recorder -g "$GEOMETRY" -f "$filepath" &
-  notify-send "Recording started" "${MODE:-fullscreen}"
+  
+  if [[ "$recorder" == "gpu-screen-recorder" ]]; then
+    if [[ -n "$geometry" ]]; then
+      gpu-screen-recorder -o "$output" -w "$geometry" -f "$filepath" &
+    else
+      gpu-screen-recorder -o "$output" -f "$filepath" &
+    fi
+  else
+    if [[ -n "$geometry" ]]; then
+      wf-recorder -g "$geometry" -f "$filepath" &
+    else
+      wf-recorder -f "$filepath" &
+    fi
+  fi
 }
 
 case "$ACTION" in
   full)
     MODE="fullscreen"
-    mkdir -p "$RECORD_DIR"
-    filepath="$RECORD_DIR/$FILENAME"
-    wf-recorder -f "$filepath" &
-    notify-send "Recording started" "${MODE:-fullscreen}"
+    recorder=$(get_recorder)
+    if [[ -z "$recorder" ]]; then
+      notify-send "Error" "No screen recorder found (gpu-screen-recorder or wf-recorder)" || true
+      exit 1
+    fi
+    OUTPUT="screen"
+    start_recording "$recorder" "$OUTPUT"
+    notify-send "Recording started" "${MODE:-fullscreen}" || true
     ;;
   selection)
     MODE="selection"
     GEOMETRY=$(slurp) || exit 0
     [[ -z "$GEOMETRY" ]] && exit 0
-    record
+    recorder=$(get_recorder)
+    if [[ -z "$recorder" ]]; then
+      notify-send "Error" "No screen recorder found" || true
+      exit 1
+    fi
+    OUTPUT="screen"
+    start_recording "$recorder" "$OUTPUT" "$GEOMETRY"
+    notify-send "Recording started" "${MODE:-selection}" || true
     ;;
   window)
     ws=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .activeWorkspace.id')
@@ -41,11 +78,19 @@ case "$ACTION" in
     kill $PID 2>/dev/null
     [[ -z "$GEOMETRY" ]] && exit 0
     MODE="window"
-    record
+    recorder=$(get_recorder)
+    if [[ -z "$recorder" ]]; then
+      notify-send "Error" "No screen recorder found" || true
+      exit 1
+    fi
+    OUTPUT="screen"
+    start_recording "$recorder" "$OUTPUT" "$GEOMETRY"
+    notify-send "Recording started" "${MODE:-window}" || true
     ;;
   stop)
-    pkill wf-recorder
-    notify-send "Recording stopped"
+    pkill gpu-screen-recorder 2>/dev/null || true
+    pkill wf-recorder 2>/dev/null || true
+    notify-send "Recording stopped" || true
     ;;
   *)
     echo "Usage: cmd-screenrecord <full|selection|window|stop>"
