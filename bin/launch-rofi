@@ -99,7 +99,7 @@ show_trigger_menu() {
 show_capture_menu() {
   current_menu="show_capture_menu"
   push_menu "show_capture_menu"
-  case $(menu "Capture" "  Screenshot\n󰕰  Screenrecord\n󰑽  Color") in
+  case $(menu "Capture" "  Screenshot\n󰹑  Screenrecord\n󰑽  Color") in
   *Screenshot*) cmd-screenshot selection clipboard && exit 0 ;;
   *Screenrecord*) show_screenrecord_menu ;;
   *Color*) hyprpicker-launch && exit 0 ;;
@@ -110,7 +110,7 @@ show_capture_menu() {
 show_screenrecord_menu() {
   current_menu="show_screenrecord_menu"
   push_menu "show_screenrecord_menu"
-  case $(menu "Screenrecord" "󰕰  Full screen\n󏻮  Stop") in
+  case $(menu "Screenrecord" "󰾊  Full screen\n󰙧  Stop") in
   *Full\ screen*) cmd-screenrecord full && exit 0 ;;
   *Stop*) cmd-screenrecord stop && exit 0 ;;
   *)
