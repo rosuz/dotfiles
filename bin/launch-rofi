@@ -110,10 +110,9 @@ show_capture_menu() {
 show_screenrecord_menu() {
   current_menu="show_screenrecord_menu"
   push_menu "show_screenrecord_menu"
-  case $(menu "Screenrecord" "󰕰  Full screen\n󰊄  Selection\n󰈞  Window") in
+  case $(menu "Screenrecord" "󰕰  Full screen\n󏻮  Stop") in
   *Full\ screen*) cmd-screenrecord full && exit 0 ;;
-  *Selection*) cmd-screenrecord selection && exit 0 ;;
-  *Window*) cmd-screenrecord window && exit 0 ;;
+  *Stop*) cmd-screenrecord stop && exit 0 ;;
   *)
     back_menu
     return

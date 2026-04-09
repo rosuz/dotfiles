@@ -2,98 +2,72 @@
 set -euo pipefail
 
 ACTION="${1:-}"
+OUTPUT_DIR="$HOME/Videos/Screenrecord"
+RECORDING_FILE="/tmp/screenrecord-filename"
+DESKTOP_AUDIO="true"
 
-RECORD_DIR="$HOME/Pictures/Screenrecord"
-FILENAME="record_$(date +%Y%m%d_%H%M%S).mp4"
+mkdir -p "$OUTPUT_DIR"
 
-get_recorder() {
-  if command -v gpu-screen-recorder &>/dev/null; then
-    echo "gpu-screen-recorder"
-  elif command -v wf-recorder &>/dev/null; then
-    echo "wf-recorder"
-  else
-    echo ""
-  fi
+get_audio_device() {
+  pactl get-default-sink | sed 's/$/.monitor/'
 }
 
 start_recording() {
-  local recorder="$1"
-  local output="$2"
-  local geometry="${3:-}"
-  
-  mkdir -p "$RECORD_DIR"
-  local filepath="$RECORD_DIR/$FILENAME"
-  
-  if [[ "$recorder" == "gpu-screen-recorder" ]]; then
-    if [[ -n "$geometry" ]]; then
-      gpu-screen-recorder -o "$output" -w "$geometry" -f "$filepath" &
-    else
-      gpu-screen-recorder -o "$output" -f "$filepath" &
-    fi
+  local filepath="$1"
+
+  local audio_args=()
+  [[ "$DESKTOP_AUDIO" == "true" ]] && audio_args+=(-a "$(get_audio_device)")
+
+  gpu-screen-recorder -w screen -o "$filepath" -fallback-cpu-encoding yes "${audio_args[@]}" &
+
+  local pid=$!
+  while kill -0 $pid 2>/dev/null && [[ ! -f "$filepath" ]]; do
+    sleep 0.2
+  done
+
+  [[ -f "$filepath" ]] && echo "$filepath" >"$RECORDING_FILE"
+}
+
+stop_recording() {
+  pkill -SIGINT -f gpu-screen-recorder
+
+  local count=0
+  while pgrep -f gpu-screen-recorder >/dev/null && ((count < 50)); do
+    sleep 0.1
+    count=$((count + 1))
+  done
+
+  local filename
+  filename=$(cat "$RECORDING_FILE" 2>/dev/null || true)
+  rm -f "$RECORDING_FILE"
+
+  if [[ -n "$filename" && -f "$filename" ]]; then
+    notify-send "Recording saved" "$(basename "$filename")"
   else
-    if [[ -n "$geometry" ]]; then
-      wf-recorder -g "$geometry" -f "$filepath" &
-    else
-      wf-recorder -f "$filepath" &
-    fi
+    notify-send "Recording stopped" "No file saved"
   fi
 }
 
+screenrecording_active() {
+  pgrep -f gpu-screen-recorder >/dev/null
+}
+
 case "$ACTION" in
-  full)
-    MODE="fullscreen"
-    recorder=$(get_recorder)
-    if [[ -z "$recorder" ]]; then
-      notify-send "Error" "No screen recorder found (gpu-screen-recorder or wf-recorder)" || true
-      exit 1
-    fi
-    OUTPUT="screen"
-    start_recording "$recorder" "$OUTPUT"
-    notify-send "Recording started" "${MODE:-fullscreen}" || true
-    ;;
-  selection)
-    MODE="selection"
-    GEOMETRY=$(slurp) || exit 0
-    [[ -z "$GEOMETRY" ]] && exit 0
-    recorder=$(get_recorder)
-    if [[ -z "$recorder" ]]; then
-      notify-send "Error" "No screen recorder found" || true
-      exit 1
-    fi
-    OUTPUT="screen"
-    start_recording "$recorder" "$OUTPUT" "$GEOMETRY"
-    notify-send "Recording started" "${MODE:-selection}" || true
-    ;;
-  window)
-    ws=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .activeWorkspace.id')
-    rects=$(
-      hyprctl monitors -j | jq -r --arg ws "$ws" \
-        '.[] | select(.activeWorkspace.id == ($ws | tonumber)) | "\(.x),\(.y) \((.width / .scale) | floor)x\((.height / .scale) | floor)"'
-      hyprctl clients -j | jq -r --arg ws "$ws" \
-        '.[] | select(.workspace.id == ($ws | tonumber)) | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
-    )
-    wayfreeze & PID=$!
-    sleep 0.1
-    GEOMETRY=$(echo "$rects" | slurp) || { kill $PID 2>/dev/null; exit 0; }
-    kill $PID 2>/dev/null
-    [[ -z "$GEOMETRY" ]] && exit 0
-    MODE="window"
-    recorder=$(get_recorder)
-    if [[ -z "$recorder" ]]; then
-      notify-send "Error" "No screen recorder found" || true
-      exit 1
-    fi
-    OUTPUT="screen"
-    start_recording "$recorder" "$OUTPUT" "$GEOMETRY"
-    notify-send "Recording started" "${MODE:-window}" || true
-    ;;
-  stop)
-    pkill gpu-screen-recorder 2>/dev/null || true
-    pkill wf-recorder 2>/dev/null || true
-    notify-send "Recording stopped" || true
-    ;;
-  *)
-    echo "Usage: cmd-screenrecord <full|selection|window|stop>"
+full)
+  FILENAME="$OUTPUT_DIR/record_$(date +%Y%m%d_%H%M%S).mp4"
+  start_recording "$FILENAME"
+  notify-send "Recording started" "fullscreen"
+  ;;
+stop)
+  stop_recording
+  ;;
+*)
+  if screenrecording_active; then
+    stop_recording
+  else
+    echo "Usage: cmd-screenrecord <full|stop>"
     exit 1
-    ;;
+  fi
+  ;;
 esac
+

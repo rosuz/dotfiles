@@ -23,7 +23,7 @@ tools=(
   xdg-utils
   neovim
   pamixer
-  wf-recorder
+  gpu-screen-recorder
   wayfreeze
   brightnessctl
   pipewire-pulse
@@ -32,7 +32,6 @@ tools=(
   tmux
   networkmanager
   bluez
-  blueman
   gvfs
   ttf-jetbrains-mono-nerd
 )
