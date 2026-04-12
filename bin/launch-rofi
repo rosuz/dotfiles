@@ -100,9 +100,20 @@ show_capture_menu() {
   current_menu="show_capture_menu"
   push_menu "show_capture_menu"
   case $(menu "Capture" "  Screenshot\n󰹑  Screenrecord\n󰑽  Color") in
-  *Screenshot*) cmd-screenshot selection clipboard && exit 0 ;;
+  *Screenshot*) show_screenshot_menu ;;
   *Screenrecord*) show_screenrecord_menu ;;
   *Color*) hyprpicker-launch && exit 0 ;;
+  *) back_menu ;;
+  esac
+}
+
+show_screenshot_menu() {
+  current_menu="show_screenshot_menu"
+  push_menu "show_screenshot_menu"
+  case $(menu "Screenshot" "󰘌  Copy\n󰈙  Save\n󰘌  Save + Copy") in
+  *Save\ +\ Copy*) cmd-screenshot selection both && exit 0 ;;
+  *Copy*) cmd-screenshot selection clipboard && exit 0 ;;
+  *Save*) cmd-screenshot selection save && exit 0 ;;
   *) back_menu ;;
   esac
 }
@@ -259,6 +270,7 @@ case "${1:-}" in
 system) show_system_menu ;;
 keybindings) show_keybind_menu ;;
 capture) show_capture_menu ;;
+screenshot) show_screenshot_menu ;;
 toggle) show_toggle_menu ;;
 style) show_style_menu ;;
 setup) show_setup_menu ;;
