@@ -3,8 +3,6 @@
 /* ================= Main window ================= */
 window {
     location: center;
-    width: 800px;
-    height: 420px;
 
     background-color: transparent;
 
@@ -54,7 +52,6 @@ entry {
 
 /* ================= List View (table body) ================= */
 listview {
-    lines: 12;
     columns: 1;
     fixed-height: false;
 

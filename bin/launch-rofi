@@ -9,8 +9,14 @@ menu() {
   local prompt="$1"
   local options="$2"
 
-  choice=$(echo -e "$options" | rofi -dmenu -p "$prompt" -theme minimal)
+  line_count=$(echo -e "$options" | wc -l)
 
+  if [ "$line_count" -gt 15 ]; then
+    line_count=15
+  fi
+
+  choice=$(echo -e "$options" | rofi -dmenu -p "$prompt" \
+    -lines "$line_count" -no-fixed-num-lines -theme minimal)
   if [[ -z "$choice" ]]; then
     return 1
   fi
@@ -46,7 +52,7 @@ back_menu() {
 show_main_menu() {
   current_menu="show_main_menu"
   push_menu "show_main_menu"
-  choice=$(menu "Go" "󰀻  Apps\n󰧑  Learn\n󰔎  Trigger\n󰐕  Style\n󰘗  Setup\n󰇹  Clipboard\n󰉉  Install\n󰭌  Remove\n  Update\n󰋙  About\n󰐥  System")
+  choice=$(menu "Go" "󰀻  Apps\n󰧑  Learn\n󰔎  Trigger\n󰐕  Style\n󰘗  Setup\n󰅇  Clipboard\n󰉉  Install\n󰭌  Remove\n  Update\n󰋙  About\n󰐥  System")
   case "$choice" in
   *Apps*) rofi -show drun -theme minimal ;;
   *Learn*) show_learn_menu ;;
@@ -79,7 +85,7 @@ show_learn_menu() {
 show_keybind_menu() {
   current_menu="show_keybind_menu"
   push_menu "show_keybind_menu"
-  choice=$(menu-keybindings | rofi -dmenu -theme ~/.local/share/dotfiles/config/rofi/keybindings.rasi -p "Keybindings" -i)
+  choice=$(menu-keybindings | rofi -dmenu -theme minimal -p "Keybindings" -i)
   [[ -z "$choice" ]] && back_menu
   notify-send "Keybinding" "$choice" || true
   exit 0
@@ -253,9 +259,11 @@ show_system_menu() {
 show_clipboard_menu() {
   current_menu="show_clipboard_menu"
   push_menu "show_clipboard_menu"
-  choice=$(menu "Clipboard" "󰇹  Reset clipboard\n$(cmd-clipboard list 2>/dev/null)")
-
-  if [[ "$choice" == "󰇹  Reset"* ]]; then
+  choice=$(menu "Clipboard" "  Reset clipboard\n$(cmd-clipboard list 2>/dev/null)") || {
+    back_menu
+    return
+  }
+  if [[ "$choice" == "  Reset"* ]]; then
     cmd-clipboard reset
     show_clipboard_menu
   elif [[ -n "$choice" ]]; then
