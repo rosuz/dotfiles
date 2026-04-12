@@ -1,15 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage:
-# launch-tui <command> [args...]        -> launch only
-# launch-tui focus <command> [args...]  -> launch or focus existing instance
-
 if [ "$1" = "focus" ]; then
-    shift
-    MODE="focus"
+	shift
+	MODE="focus"
 else
-    MODE="launch"
+	MODE="launch"
 fi
 
 CMD="$1"
@@ -20,7 +16,7 @@ APP_ID="org.$(basename "$CMD")"
 LAUNCH_COMMAND="uwsm-app -- xdg-terminal-exec --app-id=$APP_ID -e $CMD $*"
 
 if [ "$MODE" = "focus" ]; then
-    exec launch-or-focus "$APP_ID" "$LAUNCH_COMMAND"
+	exec launch-or-focus "$APP_ID" "$LAUNCH_COMMAND"
 else
-    exec setsid $LAUNCH_COMMAND
+	exec setsid $LAUNCH_COMMAND
 fi
