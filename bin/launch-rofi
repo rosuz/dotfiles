@@ -9,14 +9,8 @@ menu() {
   local prompt="$1"
   local options="$2"
 
-  line_count=$(echo -e "$options" | wc -l)
-
-  if [ "$line_count" -gt 15 ]; then
-    line_count=15
-  fi
-
   choice=$(echo -e "$options" | rofi -dmenu -p "$prompt" \
-    -lines "$line_count" -no-fixed-num-lines -theme minimal)
+    -no-fixed-num-lines -theme minimal)
   if [[ -z "$choice" ]]; then
     return 1
   fi
@@ -54,7 +48,7 @@ show_main_menu() {
   push_menu "show_main_menu"
   choice=$(menu "Go" "󰀻  Apps\n󰧑  Learn\n󰔎  Trigger\n󰐕  Style\n󰘗  Setup\n󰅇  Clipboard\n󰉉  Install\n󰭌  Remove\n  Update\n󰋙  About\n󰐥  System")
   case "$choice" in
-  *Apps*) rofi -show drun -theme minimal ;;
+  *Apps*) rofi -show drun -theme minimal -theme-str 'listview { lines: 8; }' ;;
   *Learn*) show_learn_menu ;;
   *Trigger*) show_trigger_menu ;;
   *Style*) show_style_menu ;;
